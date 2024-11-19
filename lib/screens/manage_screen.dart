@@ -1,3 +1,4 @@
+import 'package:elder_care/screens/add_medication_reminder_screen.dart';
 import 'package:flutter/material.dart';
 import 'add_doctor_appointments_screen.dart';
 import 'add_exercise_reminder_screen.dart';
@@ -81,9 +82,13 @@ class _ManageScreenState extends State<ManageScreen>
                       leading: const Icon(Icons.medication),
                       title: const Text('เพิ่มยาที่ต้องการแจ้งเตือน'),
                       onTap: () {
-                        // เปิดหน้าเพิ่มยา
-                        print('เพิ่มยาที่ต้องการแจ้งเตือน');
-                        Navigator.pop(context);
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                            const AddMedicationReminderScreen(),
+                          ),
+                        );
                       },
                     ),
                     ListTile(
