@@ -1,3 +1,4 @@
+import 'package:elder_care/screens/health_center_screen.dart';
 import 'package:elder_care/screens/manage_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -18,6 +19,7 @@ class _MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const HelpTipsScreen(),
+    const HealthCenterScreen(),
     const ManageScreen(),
     const ProfileScreen(),
   ];
@@ -42,6 +44,10 @@ class _MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
           BottomNavigationBarItem(
             icon: Icon(Icons.newspaper),
             label: 'ข่าวสารสุขภาพ',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.health_and_safety),
+            label: 'ศูนย์สุขภาพ',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.manage_history),

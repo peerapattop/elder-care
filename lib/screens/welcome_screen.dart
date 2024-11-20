@@ -1,4 +1,6 @@
+import 'package:elder_care/screens/home_screen.dart';
 import 'package:elder_care/screens/main_screen.dart';
+import 'package:elder_care/screens/register_screen.dart';
 import 'package:flutter/material.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -46,6 +48,7 @@ class WelcomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
+                    // builder: (context) => const RegisterScreen(),
                     builder: (context) => const MainScreen(),
                   ),
                 );

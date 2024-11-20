@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -8,6 +9,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunch(phoneUri.toString())) {
+      await launch(phoneUri.toString());
+    } else {
+      throw 'ไม่สามารถโทรออกได้';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,11 +48,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const ListTile(
-                leading: const Icon(Icons.medication, color: Colors.blueAccent),
-                title: const Text('ทานยา: 08:00 AM',
+                leading: Icon(Icons.medication, color: Colors.blueAccent),
+                title: Text('ทานยา: 08:00 AM',
                     style: TextStyle(fontSize: 18)),
-                subtitle: const Text('กรุณาทานยาเพื่อสุขภาพที่ดี'),
-                trailing: const Icon(Icons.notifications, color: Colors.green),
+                subtitle: Text('กรุณาทานยาเพื่อสุขภาพที่ดี'),
+                trailing: Icon(Icons.notifications, color: Colors.green),
               ),
             ),
 
@@ -60,9 +70,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(fontSize: 18)),
                 subtitle: const Text('การนัดหมายถัดไป: 10:00 AM'),
                 trailing:
-                    const Icon(Icons.calendar_today, color: Colors.orange),
+                const Icon(Icons.calendar_today, color: Colors.orange),
               ),
             ),
+
+            // แสดงข้อมูลสุขภาพล่าสุด (BMI, ความดันโลหิต)
             Card(
               elevation: 4,
               margin: const EdgeInsets.symmetric(vertical: 8),
@@ -70,12 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: ListTile(
-                leading:
-                    const Icon(Icons.fitness_center, color: Colors.blueAccent),
-                title: const Text('ออกกำลังกาย: เดิน 30 นาที',
-                    style: TextStyle(fontSize: 18)),
-                subtitle: const Text('เพื่อสุขภาพที่ดีและแข็งแรง'),
-                trailing: const Icon(Icons.check_circle, color: Colors.green),
+                leading: const Icon(Icons.health_and_safety, color: Colors.blueAccent),
+                title: const Text('ข้อมูลสุขภาพล่าสุด', style: TextStyle(fontSize: 18)),
+                subtitle: const Text('BMI: 22, ความดันโลหิต: 120/80 mmHg'),
+                trailing: const Icon(Icons.show_chart, color: Colors.green),
               ),
             ),
 
@@ -91,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                   textStyle: const TextStyle(fontSize: 18),
                 ),
                 child: const Text('ดูข้อมูลเพิ่มเติม'),
@@ -99,6 +109,89 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('ช่วยเหลือ'),
+                contentPadding: const EdgeInsets.all(16.0),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // โทรติดต่อโรงพยาบาล
+                        _makePhoneCall("0801234567");
+                      },
+                      icon: const Icon(Icons.local_hospital, color: Colors.white),
+                      label: const Text(
+                        'ติดต่อโรงพยาบาล',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // โทรติดต่อญาติ
+                        _makePhoneCall("0897654321");
+                      },
+                      icon: const Icon(Icons.family_restroom,
+                          color: Colors.white),
+                      label: const Text(
+                        'ติดต่อญาติ',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () {
+                      print('ตกลง');
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                    ),
+                    child: const Text(
+                      'ตกลง',
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        backgroundColor: Colors.blueAccent,
+        child: const Icon(Icons.alarm, color: Colors.white),
       ),
     );
   }
