@@ -82,7 +82,13 @@ class _HealthCenterScreenState extends State<HealthCenterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Health Centers'),
+        centerTitle: true,
+        title: const Text(
+          'ศูนย์สุขภาพ',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blueAccent,
+        toolbarHeight: 70,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -138,36 +144,51 @@ class _HealthCenterScreenState extends State<HealthCenterScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
+                          const SizedBox(height: 10),
+                          Text(
+                            center['contact']['phone'],
+                            style: const TextStyle(
+                              fontSize: 14.0,
+                              color: Colors.black,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           const Spacer(),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.phone, color: Colors.green),
+                                icon: const Icon(Icons.phone,
+                                    color: Colors.green),
                                 onPressed: () {
                                   // ตรวจสอบและโทรหาหมายเลขโทรศัพท์จากข้อมูลใน center
-                                  final phoneNumber = center['contact']['phone'];
+                                  final phoneNumber =
+                                      center['contact']['phone'];
                                   if (phoneNumber != null) {
                                     _makePhoneCall(phoneNumber);
                                   } else {
-                                    // แจ้งเตือนถ้าไม่มีหมายเลขโทรศัพท์
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('หมายเลขโทรศัพท์ไม่พร้อมใช้งาน')),
+                                      const SnackBar(
+                                        content: Text(
+                                            'หมายเลขโทรศัพท์ไม่พร้อมใช้งาน'),
+                                      ),
                                     );
                                   }
                                 },
                               ),
                               IconButton(
-                                icon: const Icon(Icons.email, color: Colors.orange),
+                                icon: const Icon(Icons.email,
+                                    color: Colors.orange),
                                 onPressed: () {
-                                  // ตรวจสอบและส่งอีเมลจากข้อมูลใน center
                                   final email = center['contact']['email'];
                                   if (email != null) {
                                     _sendEmail(email);
                                   } else {
-                                    // แจ้งเตือนถ้าไม่มีอีเมล
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('อีเมลไม่พร้อมใช้งาน')),
+                                      const SnackBar(
+                                        content: Text('อีเมลไม่พร้อมใช้งาน'),
+                                      ),
                                     );
                                   }
                                 },
