@@ -35,8 +35,11 @@ class _ManageScreenState extends State<ManageScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('จัดการกิจกรรมสุขภาพ'),
+        centerTitle: true,
+        title: const Text('จัดการกิจกรรมสุขภาพ',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blueAccent,
+        toolbarHeight: 70,
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -44,6 +47,9 @@ class _ManageScreenState extends State<ManageScreen>
             Tab(text: 'กินยา'),
             Tab(text: 'ออกกำลังกาย'),
           ],
+          labelColor: Colors.black,
+          unselectedLabelColor: Colors.white,
+          indicatorColor: Colors.blueAccent,
         ),
       ),
       body: TabBarView(
@@ -86,7 +92,7 @@ class _ManageScreenState extends State<ManageScreen>
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) =>
-                            const AddMedicationReminderScreen(),
+                                const AddMedicationReminderScreen(),
                           ),
                         );
                       },
