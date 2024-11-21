@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'edit_profile_screen.dart'; // นำเข้า EditProfileScreen
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -9,8 +10,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool isEditing = false;
-
   final TextEditingController nameController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController diseaseController = TextEditingController();
@@ -42,20 +41,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  // Function to save data to SharedPreferences
-  Future<void> _saveData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('name', nameController.text);
-    await prefs.setString('age', ageController.text);
-    await prefs.setString('disease', diseaseController.text);
-    await prefs.setString('relative', relativeController.text);
-    await prefs.setString('relativePhone', relativePhoneController.text);
-    await prefs.setString('doctor', doctorController.text);
-    await prefs.setString('doctorPhone', doctorPhoneController.text);
-    await prefs.setString('hospital', hospitalController.text);
-    await prefs.setString('hospitalPhone', hospitalPhoneController.text);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,29 +64,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              // Display editable or profile card based on isEditing status
               _buildProfileSection(),
               const SizedBox(height: 15),
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    setState(() {
-                      isEditing = !isEditing;
-                    });
-                    if (!isEditing) {
-                      // Save data when leaving edit mode
-                      _saveData();
-                      print('ข้อมูลถูกบันทึก');
-                    }
+                    // ไปยังหน้าจอ EditProfileScreen เมื่อกดปุ่ม
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EditProfileScreen(
+                        nameController: nameController,
+                        ageController: ageController,
+                        diseaseController: diseaseController,
+                        relativeController: relativeController,
+                        relativePhoneController: relativePhoneController,
+                        doctorController: doctorController,
+                        doctorPhoneController: doctorPhoneController,
+                        hospitalController: hospitalController,
+                        hospitalPhoneController: hospitalPhoneController,
+                      )),
+
+                    );
+
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                     textStyle: const TextStyle(fontSize: 18),
                   ),
-                  child: Text(
-                    isEditing ? 'บันทึกโปรไฟล์' : 'แก้ไขโปรไฟล์',
-                    style: const TextStyle(color: Colors.white),
+                  child: const Text(
+                    'แก้ไขโปรไฟล์',
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ),
@@ -115,79 +108,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileSection() {
     return Column(
       children: [
-        isEditing ? _buildEditableCard(
-          controller: nameController,
-          hint: 'ชื่อ',
-        ) : _buildProfileCard(
+        _buildProfileCard(
           icon: Icons.person,
           title: nameController.text,
           subtitle: 'ชื่อ',
         ),
-        isEditing ? _buildEditableCard(
-          controller: ageController,
-          hint: 'อายุ',
-        ) : _buildProfileCard(
+        _buildProfileCard(
           icon: Icons.calendar_today,
           title: ageController.text,
           subtitle: 'อายุ',
         ),
-        isEditing ? _buildEditableCard(
-          controller: diseaseController,
-          hint: 'โรคประจําตัว',
-        ) : _buildProfileCard(
+        _buildProfileCard(
           icon: Icons.healing,
           title: diseaseController.text,
           subtitle: 'โรคประจําตัว',
         ),
-        isEditing ? _buildEditableCard(
-          controller: relativeController,
-          hint: 'ข้อมูลญาติ',
-        ) : _buildProfileCard(
+        _buildProfileCard(
           icon: Icons.family_restroom,
           title: relativeController.text,
           subtitle: 'ข้อมูลญาติ',
           trailing: _buildPhoneRow(relativePhoneController.text),
         ),
-        isEditing ? _buildEditableCard(
-          controller: doctorController,
-          hint: 'หมอ',
-        ) : _buildProfileCard(
+        _buildProfileCard(
           icon: Icons.medical_services,
           title: doctorController.text,
           subtitle: 'หมอ',
           trailing: _buildPhoneRow(doctorPhoneController.text),
         ),
-        isEditing ? _buildEditableCard(
-          controller: hospitalController,
-          hint: 'โรงพยาบาล',
-        ) : _buildProfileCard(
+        _buildProfileCard(
           icon: Icons.local_hospital,
           title: hospitalController.text,
           subtitle: 'โรงพยาบาล',
           trailing: _buildPhoneRow(hospitalPhoneController.text),
         ),
       ],
-    );
-  }
-
-  Widget _buildEditableCard({
-    required TextEditingController controller,
-    required String hint,
-  }) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: hint,
-          border: const OutlineInputBorder(),
-        ),
-        keyboardType: TextInputType.text,
-      ),
     );
   }
 

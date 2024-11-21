@@ -135,6 +135,60 @@ class HelpTipsScreen extends StatelessWidget {
               ),
             ),
           ),
+          GestureDetector(
+            onTap: () {
+              _launchURL('https://www.thairath.co.th/money/sustainability/esg_strategy/2819431');
+            },
+            child: Card(
+              elevation: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: Image.network(
+                            'https://static.thairath.co.th/media/dFQROr7oWzulq5Fa5LJQP4LxTuz31ylABEQQrAPECck6V6MpiRjuIk3cipQ9FnmB3BG.webp')
+                            .image,
+                        fit: BoxFit.cover,
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'คนไทยอยากลดกินเนื้อสัตว์ ต้นเหตุสุขภาพ-สิ่งแวดล้อม แต่โปรตีนพืชแพง',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'เปิดผลวิจัยคนไทยต้องการลดการกินเนื้อสัตว์กว่า 67% ภายใน 2 ปีข้างหน้า ด้วยเหตุผลด้านสุขภาพ สิ่งแวดล้อม และสวัสดิภาพสัตว์ แต่ยังติดที่ข้อจำกัดด้านราคาของโปรตีนทางเลือกมีราคาสูง และหาซื้อทานได้ยาก',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                          TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

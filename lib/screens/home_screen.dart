@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -9,6 +10,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String name = '';
+
   Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunch(phoneUri.toString())) {
@@ -16,6 +19,21 @@ class _HomeScreenState extends State<HomeScreen> {
     } else {
       throw 'ไม่สามารถโทรออกได้';
     }
+  }
+
+  String aqi = "80";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      name = prefs.getString('name') ?? '';
+    });
   }
 
   @override
@@ -33,14 +51,32 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ชื่อผู้ใช้ หรือการทักทาย
-            const Text(
-              'สวัสดีคุณ John Doe',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Text(
+              'สวัสดีคุณ $name',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-
-            // การแจ้งเตือนการทานยา
+            Center(
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: const BoxDecoration(
+                  color: Colors.blueAccent,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    "$aqi µg/m³",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             Card(
               elevation: 4,
               margin: const EdgeInsets.symmetric(vertical: 8),
@@ -49,62 +85,38 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: const ListTile(
                 leading: Icon(Icons.medication, color: Colors.blueAccent),
-                title: Text('ทานยา: 08:00 AM',
-                    style: TextStyle(fontSize: 18)),
+                title: Text('ทานยา: 08:00 AM', style: TextStyle(fontSize: 18)),
                 subtitle: Text('กรุณาทานยาเพื่อสุขภาพที่ดี'),
                 trailing: Icon(Icons.notifications, color: Colors.green),
               ),
             ),
-
-            // การพบแพทย์
             Card(
               elevation: 4,
               margin: const EdgeInsets.symmetric(vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: ListTile(
-                leading: const Icon(Icons.medical_services,
-                    color: Colors.blueAccent),
-                title: const Text('พบแพทย์: Dr. Jane Smith',
+              child: const ListTile(
+                leading: Icon(Icons.medical_services, color: Colors.blueAccent),
+                title: Text('พบแพทย์: Dr. Jane Smith',
                     style: TextStyle(fontSize: 18)),
-                subtitle: const Text('การนัดหมายถัดไป: 10:00 AM'),
-                trailing:
-                const Icon(Icons.calendar_today, color: Colors.orange),
+                subtitle: Text('การนัดหมายถัดไป: 10:00 AM'),
+                trailing: Icon(Icons.calendar_today, color: Colors.orange),
               ),
             ),
-
-            // แสดงข้อมูลสุขภาพล่าสุด (BMI, ความดันโลหิต)
             Card(
               elevation: 4,
               margin: const EdgeInsets.symmetric(vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: ListTile(
-                leading: const Icon(Icons.health_and_safety, color: Colors.blueAccent),
-                title: const Text('ข้อมูลสุขภาพล่าสุด', style: TextStyle(fontSize: 18)),
-                subtitle: const Text('BMI: 22, ความดันโลหิต: 120/80 mmHg'),
-                trailing: const Icon(Icons.show_chart, color: Colors.green),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // ปุ่มแจ้งเตือนเพิ่มเติม
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // เพิ่มฟังก์ชันการแจ้งเตือน
-                  print('แจ้งเตือนข้อมูลเพิ่มเติม');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                  textStyle: const TextStyle(fontSize: 18),
-                ),
-                child: const Text('ดูข้อมูลเพิ่มเติม'),
+              child: const ListTile(
+                leading:
+                    Icon(Icons.health_and_safety, color: Colors.blueAccent),
+                title:
+                    Text('ข้อมูลสุขภาพล่าสุด', style: TextStyle(fontSize: 18)),
+                subtitle: Text('BMI: 22, ความดันโลหิต: 120/80 mmHg'),
+                trailing: Icon(Icons.show_chart, color: Colors.green),
               ),
             ),
           ],
@@ -126,7 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         // โทรติดต่อโรงพยาบาล
                         _makePhoneCall("0801234567");
                       },
-                      icon: const Icon(Icons.local_hospital, color: Colors.white),
+                      icon:
+                          const Icon(Icons.local_hospital, color: Colors.white),
                       label: const Text(
                         'ติดต่อโรงพยาบาล',
                         style: TextStyle(
