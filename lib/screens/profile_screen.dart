@@ -11,7 +11,6 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool isEditing = false;
 
-  // TextEditingControllers for editable fields
   final TextEditingController nameController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController diseaseController = TextEditingController();
@@ -25,10 +24,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData(); // Load data from SharedPreferences when the widget starts
+    _loadData();
   }
 
-  // Function to load data from SharedPreferences
   Future<void> _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {

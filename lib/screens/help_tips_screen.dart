@@ -4,14 +4,13 @@ import 'package:url_launcher/url_launcher.dart';
 class HelpTipsScreen extends StatelessWidget {
   const HelpTipsScreen({super.key});
 
-  // ฟังก์ชันเปิด URL ในเบราว์เซอร์
-  // void _launchURL(String url) async {
-  //   if (await canLaunch(url)) {
-  //     await launch(url);
-  //   } else {
-  //     throw 'ไม่สามารถเปิดลิงก์ได้: $url';
-  //   }
-  // }
+  void _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'ไม่สามารถเปิดลิงก์ได้: $url';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +29,7 @@ class HelpTipsScreen extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () {
-              // _launchURL('https://www.thairath.co.th/money/sustainability/esg_strategy/2819431');
+              _launchURL('https://www.thairath.co.th/money/sustainability/esg_strategy/2819431');
             },
             child: Card(
               elevation: 4,
@@ -84,7 +83,7 @@ class HelpTipsScreen extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () {
-              // _launchURL('https://www.thairath.co.th/money/sustainability/esg_strategy/2819431');
+              _launchURL('https://www.thairath.co.th/money/sustainability/esg_strategy/2819431');
             },
             child: Card(
               elevation: 4,
