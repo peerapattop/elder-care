@@ -4,9 +4,7 @@ import 'add_doctor_appointments_screen.dart';
 import 'add_exercise_reminder_screen.dart';
 import 'doctor_appointments_screen.dart';
 import 'exercise_reminder_screen.dart';
-import 'medication_reminder_screen.dart'; // หน้ารายการหมอนัด
-// import 'medication_reminders_screen.dart'; // หน้ารายการกินยา
-// import 'exercise_reminders_screen.dart'; // หน้ารายการออกกำลังกาย
+import 'medication_reminder_screen.dart';
 
 class ManageScreen extends StatefulWidget {
   const ManageScreen({super.key});
@@ -55,14 +53,13 @@ class _ManageScreenState extends State<ManageScreen>
       body: TabBarView(
         controller: _tabController,
         children: const [
-          DoctorAppointmentsScreen(), // หน้ารายการหมอนัด
-          MedicationRemindersScreen(), // หน้ารายการกินยา
-          ExerciseRemindersScreen(), // หน้ารายการออกกำลังกาย
+          DoctorAppointmentsScreen(),
+          MedicationRemindersScreen(),
+          ExerciseRemindersScreen(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // เมื่อกดปุ่ม + จะเปิด Bottom Sheet ให้เลือกการเพิ่ม
           showModalBottomSheet(
             context: context,
             builder: (BuildContext context) {
@@ -117,7 +114,10 @@ class _ManageScreenState extends State<ManageScreen>
           );
         },
         backgroundColor: Colors.blueAccent,
-        child: const Icon(Icons.add),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
     );
   }

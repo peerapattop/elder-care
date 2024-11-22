@@ -67,32 +67,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildProfileSection(),
               const SizedBox(height: 15),
               Center(
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.edit, color: Colors.white),
                   onPressed: () {
-                    // ไปยังหน้าจอ EditProfileScreen เมื่อกดปุ่ม
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => EditProfileScreen(
-                        nameController: nameController,
-                        ageController: ageController,
-                        diseaseController: diseaseController,
-                        relativeController: relativeController,
-                        relativePhoneController: relativePhoneController,
-                        doctorController: doctorController,
-                        doctorPhoneController: doctorPhoneController,
-                        hospitalController: hospitalController,
-                        hospitalPhoneController: hospitalPhoneController,
-                      )),
-
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => EditProfileScreen(
+                          nameController: nameController,
+                          ageController: ageController,
+                          diseaseController: diseaseController,
+                          relativeController: relativeController,
+                          relativePhoneController: relativePhoneController,
+                          doctorController: doctorController,
+                          doctorPhoneController: doctorPhoneController,
+                          hospitalController: hospitalController,
+                          hospitalPhoneController: hospitalPhoneController,
+                        ),
+                      ),
                     );
-
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                     textStyle: const TextStyle(fontSize: 18),
                   ),
-                  child: const Text(
+                  label: const Text(
                     'แก้ไขโปรไฟล์',
                     style: TextStyle(color: Colors.white),
                   ),

@@ -35,7 +35,6 @@ class _AddDoctorAppointmentsScreenState
     }
   }
 
-  // ฟังก์ชันเพื่อเลือกเวลา
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
@@ -52,8 +51,12 @@ class _AddDoctorAppointmentsScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('เพิ่มหมอนัด'),
+        title: const Text(
+          'เพิ่มหมอนัด',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blueAccent,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -62,7 +65,6 @@ class _AddDoctorAppointmentsScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              // ชื่อหมอ
               const Text(
                 'ชื่อหมอ:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -81,8 +83,6 @@ class _AddDoctorAppointmentsScreenState
                 },
               ),
               const SizedBox(height: 20),
-
-              // วันที่นัดหมาย
               const Text(
                 'วันที่นัดหมาย:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -99,8 +99,6 @@ class _AddDoctorAppointmentsScreenState
                 ),
               ),
               const SizedBox(height: 20),
-
-              // เวลา
               const Text(
                 'เวลา:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -117,8 +115,6 @@ class _AddDoctorAppointmentsScreenState
                 ),
               ),
               const SizedBox(height: 20),
-
-              // สถานที่
               const Text(
                 'สถานที่นัดหมาย:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -137,8 +133,6 @@ class _AddDoctorAppointmentsScreenState
                 },
               ),
               const SizedBox(height: 20),
-
-              // รายละเอียด
               const Text(
                 'รายละเอียดการนัดหมาย:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -152,20 +146,17 @@ class _AddDoctorAppointmentsScreenState
                 ),
               ),
               const SizedBox(height: 30),
-
-              // ปุ่มบันทึก
               Center(
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.save, color: Colors.white),
                   onPressed: () {
                     if (_doctorNameController.text.isEmpty ||
                         _locationController.text.isEmpty) {
-                      // คุณสามารถแสดงข้อความเตือนที่นี่
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('กรุณากรอกข้อมูลให้ครบ')),
                       );
                       return;
                     }
-                    // บันทึกข้อมูล
                     print('บันทึกข้อมูลการนัดหมาย');
                   },
                   style: ElevatedButton.styleFrom(
@@ -174,7 +165,7 @@ class _AddDoctorAppointmentsScreenState
                         horizontal: 30, vertical: 12),
                     textStyle: const TextStyle(fontSize: 18),
                   ),
-                  child: const Text(
+                  label: const Text(
                     'บันทึก',
                     style: TextStyle(color: Colors.white),
                   ),

@@ -10,13 +10,12 @@ class AddMedicationReminderScreen extends StatefulWidget {
 
 class _AddMedicationReminderScreenState
     extends State<AddMedicationReminderScreen> {
-  TextEditingController _medicationController = TextEditingController();
-  TextEditingController _dosageController = TextEditingController();
-  TextEditingController _detailsController = TextEditingController();
+  final TextEditingController _medicationController = TextEditingController();
+  final TextEditingController _dosageController = TextEditingController();
+  final TextEditingController _detailsController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
 
-  // ฟังก์ชันสำหรับเลือกวันที่
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -31,7 +30,6 @@ class _AddMedicationReminderScreenState
     }
   }
 
-  // ฟังก์ชันสำหรับเลือกเวลา
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -48,8 +46,12 @@ class _AddMedicationReminderScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('เพิ่มการเตือนทานยา'),
+        title: const Text(
+          'เพิ่มการเตือนทานยา',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blueAccent,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -58,7 +60,6 @@ class _AddMedicationReminderScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              // ชื่อยา
               const Text(
                 'ชื่อยา:',
                 style: TextStyle(fontSize: 18),
@@ -71,8 +72,6 @@ class _AddMedicationReminderScreenState
                 ),
               ),
               const SizedBox(height: 20),
-        
-              // ขนาดยา
               const Text(
                 'ขนาดยา (มิลลิกรัม):',
                 style: TextStyle(fontSize: 18),
@@ -86,30 +85,29 @@ class _AddMedicationReminderScreenState
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 20),
-        
-              // วันทานยา
               const Text(
                 'วันทานยา:',
                 style: TextStyle(fontSize: 18),
               ),
               TextField(
-                controller: TextEditingController(text: '${_selectedDate.toLocal()}'.split(' ')[0]),
+                controller: TextEditingController(
+                  text: "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
+                ),
                 decoration: const InputDecoration(
-                  hintText: 'เลือกวันทานยา',
+                  hintText: 'เลือกวันที่',
                   border: OutlineInputBorder(),
                 ),
                 readOnly: true,
                 onTap: () => _selectDate(context),
               ),
               const SizedBox(height: 20),
-        
-              // เวลา
               const Text(
                 'เวลา:',
                 style: TextStyle(fontSize: 18),
               ),
               TextField(
-                controller: TextEditingController(text: _selectedTime.format(context)),
+                controller:
+                    TextEditingController(text: _selectedTime.format(context)),
                 decoration: const InputDecoration(
                   hintText: 'เลือกเวลา',
                   border: OutlineInputBorder(),
@@ -118,8 +116,6 @@ class _AddMedicationReminderScreenState
                 onTap: () => _selectTime(context),
               ),
               const SizedBox(height: 20),
-        
-              // รายละเอียด
               const Text(
                 'รายละเอียดยา:',
                 style: TextStyle(fontSize: 18),
@@ -133,24 +129,33 @@ class _AddMedicationReminderScreenState
                 ),
               ),
               const SizedBox(height: 30),
-        
-              // ปุ่มบันทึก
               Center(
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.save, color: Colors.white),
                   onPressed: () {
-                    // บันทึกข้อมูลการเตือนทานยา
-                    print('ชื่อยา: ${_medicationController.text}');
-                    print('ขนาดยา: ${_dosageController.text}');
-                    print('วันทานยา: $_selectedDate');
-                    print('เวลา: $_selectedTime');
-                    print('รายละเอียด: ${_detailsController.text}');
+                    if (_medicationController.text.isEmpty ||
+                        _dosageController.text.isEmpty ||
+                        _detailsController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('กรุณากรอกข้อมูลให้ครบ')),
+                      );
+                      return;
+                    }
+                    print('บันทึกข้อมูลการนัดหมาย');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 12),
                     textStyle: const TextStyle(fontSize: 18),
                   ),
-                  child: const Text('บันทึก'),
+                  label: const Text(
+                    'บันทึก',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
