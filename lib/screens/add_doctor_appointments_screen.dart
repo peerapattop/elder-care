@@ -1,5 +1,7 @@
+import 'dart:convert'; // สำหรับการจัดการ JSON
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // สำหรับการจัดการวันที่
+import 'package:shared_preferences/shared_preferences.dart'; // สำหรับ SharedPreferences
 
 class AddDoctorAppointmentsScreen extends StatefulWidget {
   const AddDoctorAppointmentsScreen({super.key});
@@ -11,16 +13,13 @@ class AddDoctorAppointmentsScreen extends StatefulWidget {
 
 class _AddDoctorAppointmentsScreenState
     extends State<AddDoctorAppointmentsScreen> {
-  // ตัวแปรสำหรับเก็บค่าต่างๆ
   final TextEditingController _doctorNameController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _detailsController = TextEditingController();
 
-  // ตัวแปรสำหรับเก็บวันที่และเวลา
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
 
-  // ฟังก์ชันเพื่อเลือกวันที่
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -45,6 +44,44 @@ class _AddDoctorAppointmentsScreenState
         _selectedTime = pickedTime;
       });
     }
+  }
+
+  Future<void> _saveAppointment() async {
+    if (_doctorNameController.text.isEmpty || _locationController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('กรุณากรอกข้อมูลให้ครบ')),
+      );
+      return;
+    }
+
+    final newAppointment = {
+      'doctorName': _doctorNameController.text,
+      'location': _locationController.text,
+      'details': _detailsController.text,
+      'appointmentDate': DateFormat('yyyy-MM-dd').format(_selectedDate),
+      'appointmentTime': _selectedTime.format(context),
+    };
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? appointmentsJson = prefs.getString('appointments');
+    List<Map<String, dynamic>> appointments = [];
+
+    if (appointmentsJson != null) {
+      // ถ้ามีข้อมูลนัดหมายเดิมให้นำมาถอดรหัส JSON
+      appointments = List<Map<String, dynamic>>.from(json.decode(appointmentsJson));
+    }
+
+    // เพิ่มนัดหมายใหม่เข้าไปในรายการ
+    appointments.add(newAppointment);
+
+    // เข้ารหัสรายการทั้งหมดเป็น JSON และบันทึกใน SharedPreferences
+    await prefs.setString('appointments', json.encode(appointments));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('บันทึกข้อมูลการนัดหมายสำเร็จ')),
+    );
+
+    Navigator.of(context).pop();
   }
 
   @override
@@ -75,12 +112,6 @@ class _AddDoctorAppointmentsScreenState
                   hintText: 'กรอกชื่อหมอ',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'กรุณากรอกชื่อหมอ';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 20),
               const Text(
@@ -125,12 +156,6 @@ class _AddDoctorAppointmentsScreenState
                   hintText: 'กรอกสถานที่นัดหมาย',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'กรุณากรอกสถานที่';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 20),
               const Text(
@@ -149,16 +174,7 @@ class _AddDoctorAppointmentsScreenState
               Center(
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.save, color: Colors.white),
-                  onPressed: () {
-                    if (_doctorNameController.text.isEmpty ||
-                        _locationController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('กรุณากรอกข้อมูลให้ครบ')),
-                      );
-                      return;
-                    }
-                    print('บันทึกข้อมูลการนัดหมาย');
-                  },
+                  onPressed: _saveAppointment,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     padding: const EdgeInsets.symmetric(

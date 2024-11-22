@@ -34,7 +34,7 @@ class _ManageScreenState extends State<ManageScreen>
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('จัดการกิจกรรมสุขภาพ',
+        title: const Text('จัดการ',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.blueAccent,
         toolbarHeight: 70,
@@ -45,9 +45,18 @@ class _ManageScreenState extends State<ManageScreen>
             Tab(text: 'กินยา'),
             Tab(text: 'ออกกำลังกาย'),
           ],
-          labelColor: Colors.black,
+          labelColor: Colors.white,
           unselectedLabelColor: Colors.white,
-          indicatorColor: Colors.blueAccent,
+          labelStyle: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+          indicatorColor: Colors.white,
+          indicatorWeight: 3.0,
         ),
       ),
       body: TabBarView(
