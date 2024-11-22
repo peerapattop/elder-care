@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddMedicationReminderScreen extends StatefulWidget {
   const AddMedicationReminderScreen({super.key});
@@ -40,6 +42,41 @@ class _AddMedicationReminderScreenState
         _selectedTime = picked;
       });
     }
+  }
+
+  Future<void> _saveMedicationReminder() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // สร้างข้อมูลที่ต้องการบันทึก
+    final medicationReminder = {
+      'medication': _medicationController.text,
+      'dosage': _dosageController.text,
+      'details': _detailsController.text,
+      'date': "${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}",
+      'time': _selectedTime.format(context),
+    };
+
+    final String? savedReminders = prefs.getString('medicationReminders');
+    List<dynamic> remindersList = savedReminders != null
+        ? jsonDecode(savedReminders)
+        : [];
+
+    remindersList.add(medicationReminder);
+
+    await prefs.setString('medicationReminders', jsonEncode(remindersList));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('บันทึกการเตือนสำเร็จ')),
+    );
+
+    _medicationController.clear();
+    _dosageController.clear();
+    _detailsController.clear();
+    setState(() {
+      _selectedDate = DateTime.now();
+      _selectedTime = TimeOfDay.now();
+    });
+    Navigator.of(context).pop();
   }
 
   @override
@@ -91,7 +128,8 @@ class _AddMedicationReminderScreenState
               ),
               TextField(
                 controller: TextEditingController(
-                  text: "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
+                  text:
+                  "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
                 ),
                 decoration: const InputDecoration(
                   hintText: 'เลือกวันที่',
@@ -107,7 +145,7 @@ class _AddMedicationReminderScreenState
               ),
               TextField(
                 controller:
-                    TextEditingController(text: _selectedTime.format(context)),
+                TextEditingController(text: _selectedTime.format(context)),
                 decoration: const InputDecoration(
                   hintText: 'เลือกเวลา',
                   border: OutlineInputBorder(),
@@ -132,7 +170,7 @@ class _AddMedicationReminderScreenState
               Center(
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.save, color: Colors.white),
-                  onPressed: () {
+                  onPressed: () async {
                     if (_medicationController.text.isEmpty ||
                         _dosageController.text.isEmpty ||
                         _detailsController.text.isEmpty) {
@@ -141,7 +179,7 @@ class _AddMedicationReminderScreenState
                       );
                       return;
                     }
-                    print('บันทึกข้อมูลการนัดหมาย');
+                    await _saveMedicationReminder();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
