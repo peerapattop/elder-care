@@ -110,13 +110,13 @@ class _AddMedicationReminderScreenState
               ),
               const SizedBox(height: 20),
               const Text(
-                'ขนาดยา (มิลลิกรัม):',
+                'ขนาดยา (เม็ด):',
                 style: TextStyle(fontSize: 18),
               ),
               TextField(
                 controller: _dosageController,
                 decoration: const InputDecoration(
-                  hintText: 'กรอกขนาดยา',
+                  hintText: 'กรอกจำนวน',
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,

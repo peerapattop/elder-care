@@ -67,21 +67,18 @@ class _AddDoctorAppointmentsScreenState
     List<Map<String, dynamic>> appointments = [];
 
     if (appointmentsJson != null) {
-      // ถ้ามีข้อมูลนัดหมายเดิมให้นำมาถอดรหัส JSON
       appointments = List<Map<String, dynamic>>.from(json.decode(appointmentsJson));
     }
 
-    // เพิ่มนัดหมายใหม่เข้าไปในรายการ
     appointments.add(newAppointment);
 
-    // เข้ารหัสรายการทั้งหมดเป็น JSON และบันทึกใน SharedPreferences
     await prefs.setString('appointments', json.encode(appointments));
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('บันทึกข้อมูลการนัดหมายสำเร็จ')),
     );
 
-    Navigator.of(context).pop();
+    Navigator.pop(context, true);
   }
 
   @override
