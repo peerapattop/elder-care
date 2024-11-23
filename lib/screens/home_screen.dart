@@ -47,27 +47,28 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final List<Map<String, dynamic>> appointments =
-    List<Map<String, dynamic>>.from(json.decode(appointmentsJson));
+        List<Map<String, dynamic>>.from(json.decode(appointmentsJson));
 
     // แปลงวันที่และเวลาเป็น DateTime เพื่อคำนวณ
     final now = DateTime.now();
 
     appointments.sort((a, b) {
-      final DateTime dateTimeA = DateTime.parse('${a['appointmentDate']} ${a['appointmentTime']}');
-      final DateTime dateTimeB = DateTime.parse('${b['appointmentDate']} ${b['appointmentTime']}');
+      final DateTime dateTimeA =
+          DateTime.parse('${a['appointmentDate']} ${a['appointmentTime']}');
+      final DateTime dateTimeB =
+          DateTime.parse('${b['appointmentDate']} ${b['appointmentTime']}');
       return dateTimeA.compareTo(dateTimeB);
     });
 
     // กรองเฉพาะเวลาที่มากกว่าหรือเท่ากับเวลาปัจจุบัน
     final nearestAppointments = appointments.where((appointment) {
-      final DateTime appointmentDateTime =
-      DateTime.parse('${appointment['appointmentDate']} ${appointment['appointmentTime']}');
+      final DateTime appointmentDateTime = DateTime.parse(
+          '${appointment['appointmentDate']} ${appointment['appointmentTime']}');
       return appointmentDateTime.isAfter(now);
     }).toList();
 
     return nearestAppointments.isNotEmpty ? nearestAppointments.first : null;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -87,27 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               'สวัสดีคุณ $name',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: const BoxDecoration(
-                  color: Colors.blueAccent,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    "$aqi µg/m³",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
             ),
             const SizedBox(height: 20),
             Card(
