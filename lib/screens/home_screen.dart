@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -35,6 +37,37 @@ class _HomeScreenState extends State<HomeScreen> {
       name = prefs.getString('name') ?? '';
     });
   }
+
+  Future<Map<String, dynamic>?> _getNearestAppointment() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? appointmentsJson = prefs.getString('appointments');
+
+    if (appointmentsJson == null) {
+      return null; // หากไม่มีข้อมูลการนัดหมาย
+    }
+
+    final List<Map<String, dynamic>> appointments =
+    List<Map<String, dynamic>>.from(json.decode(appointmentsJson));
+
+    // แปลงวันที่และเวลาเป็น DateTime เพื่อคำนวณ
+    final now = DateTime.now();
+
+    appointments.sort((a, b) {
+      final DateTime dateTimeA = DateTime.parse('${a['appointmentDate']} ${a['appointmentTime']}');
+      final DateTime dateTimeB = DateTime.parse('${b['appointmentDate']} ${b['appointmentTime']}');
+      return dateTimeA.compareTo(dateTimeB);
+    });
+
+    // กรองเฉพาะเวลาที่มากกว่าหรือเท่ากับเวลาปัจจุบัน
+    final nearestAppointments = appointments.where((appointment) {
+      final DateTime appointmentDateTime =
+      DateTime.parse('${appointment['appointmentDate']} ${appointment['appointmentTime']}');
+      return appointmentDateTime.isAfter(now);
+    }).toList();
+
+    return nearestAppointments.isNotEmpty ? nearestAppointments.first : null;
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -111,12 +144,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const ListTile(
-                leading:
-                    Icon(Icons.health_and_safety, color: Colors.blueAccent),
-                title:
-                    Text('ข้อมูลสุขภาพล่าสุด', style: TextStyle(fontSize: 18)),
-                subtitle: Text('BMI: 22, ความดันโลหิต: 120/80 mmHg'),
-                trailing: Icon(Icons.show_chart, color: Colors.green),
+                leading: Icon(Icons.medical_services, color: Colors.blueAccent),
+                title: Text('กิจกรรม: วิ่ง 30 นาที ',
+                    style: TextStyle(fontSize: 18)),
+                subtitle: Text('การนัดหมายถัดไป: 10:00 AM'),
+                trailing: Icon(Icons.calendar_today, color: Colors.orange),
               ),
             ),
           ],
@@ -203,8 +235,8 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
         },
-        backgroundColor: Colors.blueAccent,
-        child: const Icon(Icons.alarm, color: Colors.white),
+        backgroundColor: Colors.red,
+        child: const Icon(Icons.warning, color: Colors.white),
       ),
     );
   }

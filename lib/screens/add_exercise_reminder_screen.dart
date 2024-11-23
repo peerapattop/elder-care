@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class AddExerciseReminderScreen extends StatefulWidget {
   const AddExerciseReminderScreen({super.key});
@@ -41,6 +43,33 @@ class _AddExerciseReminderScreenState extends State<AddExerciseReminderScreen> {
     }
   }
 
+  Future<void> _saveReminder() async {
+    if (_activityController.text.isEmpty || _detailsController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('กรุณากรอกข้อมูลให้ครบ')),
+      );
+      return;
+    }
+
+    final newReminder = {
+      'activity': _activityController.text,
+      'details': _detailsController.text,
+      'date': _selectedDate.toIso8601String(),
+      'time': _selectedTime.format(context),
+    };
+
+    final prefs = await SharedPreferences.getInstance();
+    final reminders = prefs.getStringList('exerciseReminders') ?? [];
+    reminders.add(jsonEncode(newReminder));
+    await prefs.setStringList('exerciseReminders', reminders);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('บันทึกสำเร็จ')),
+    );
+
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,12 +98,6 @@ class _AddExerciseReminderScreenState extends State<AddExerciseReminderScreen> {
                   hintText: 'กรอกชื่อกิจกรรม',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'กรุณากรอกชื่อกิจกรรม';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 20),
               const Text(
@@ -114,34 +137,21 @@ class _AddExerciseReminderScreenState extends State<AddExerciseReminderScreen> {
                 style: TextStyle(fontSize: 18),
               ),
               TextFormField(
-                controller: _activityController,
+                controller: _detailsController,
                 decoration: const InputDecoration(
                   hintText: 'กรอกรายละเอียด',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'กรอกรายละเอียด';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.save,color: Colors.white),
-                  onPressed: () {
-                   if(_activityController.text.isEmpty || _detailsController.text.isEmpty){
-                     ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(content: Text('กรุณากรอกข้อมูลให้ครบ')),
-                     );
-                     return;
-                   }
-                  },
+                  icon: const Icon(Icons.save, color: Colors.white),
+                  onPressed: _saveReminder,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                     textStyle: const TextStyle(fontSize: 18),
                   ),
                   label: const Text(

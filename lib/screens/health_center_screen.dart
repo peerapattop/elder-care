@@ -118,7 +118,7 @@ class _HealthCenterScreenState extends State<HealthCenterScreen> {
                             center['name'],
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 16.0,
+                              fontSize: 15.0,
                               color: Colors.blue,
                             ),
                             maxLines: 2,
@@ -144,11 +144,11 @@ class _HealthCenterScreenState extends State<HealthCenterScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 2),
                           Text(
                             center['contact']['phone'],
                             style: const TextStyle(
-                              fontSize: 14.0,
+                              fontSize: 12.0,
                               color: Colors.black,
                             ),
                             maxLines: 2,
@@ -162,7 +162,6 @@ class _HealthCenterScreenState extends State<HealthCenterScreen> {
                                 icon: const Icon(Icons.phone,
                                     color: Colors.green),
                                 onPressed: () {
-                                  // ตรวจสอบและโทรหาหมายเลขโทรศัพท์จากข้อมูลใน center
                                   final phoneNumber =
                                       center['contact']['phone'];
                                   if (phoneNumber != null) {
