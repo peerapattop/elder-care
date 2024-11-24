@@ -41,9 +41,10 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
 
   void _markAsTaken(int index) {
     setState(() {
-      _medicationReminders[index]['status'] = _medicationReminders[index]['status'] == 'กินยาแล้ว' ? 'เสร็จสิ้น' : 'กินยาแล้ว';
+      _medicationReminders[index]['status'] =
+      _medicationReminders[index]['status'] == 'กินยาแล้ว' ? 'เสร็จสิ้น' : 'กินยาแล้ว';
     });
-    _saveMedicationReminders();
+    _saveMedicationReminders(); // ต้องบันทึกข้อมูลหลังจากการอัปเดต
   }
 
   void _deleteReminder(int index) {

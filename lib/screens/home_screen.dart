@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final List<dynamic> decodedJson = json.decode(medicationsJson);
       final List<Map<String, dynamic>> medications =
-          decodedJson.map((item) => Map<String, dynamic>.from(item)).toList();
+      decodedJson.map((item) => Map<String, dynamic>.from(item)).toList();
       print('medications: $medications');
 
       if (medications.isEmpty) {
@@ -77,13 +77,17 @@ class _HomeScreenState extends State<HomeScreen> {
       final DateTime now = DateTime.now();
       final dateFormat = DateFormat("yyyy-MM-dd hh:mm a");
 
-      // กรองเฉพาะยาที่อยู่ในอนาคต
+      // กรองเฉพาะยาที่อยู่ในอนาคตและยังไม่ได้ยืนยันการกิน
       final upcomingMedications = medications.where((medication) {
         try {
           final DateTime medicationTime =
-              dateFormat.parse('${medication['date']} ${medication['time']}');
+          dateFormat.parse('${medication['date']} ${medication['time']}');
           print('Checking medication time: $medicationTime, Now: $now');
-          return medicationTime.isAfter(now); // เฉพาะยาในอนาคต
+
+          // ตรวจสอบว่าการยืนยันการทานยานี้ถูกตั้งค่าแล้วหรือยัง
+          final bool isConfirmed = medication['isConfirmed'] ?? false;
+          // กรองยาที่อยู่ในอนาคตและยังไม่ได้ยืนยันการกิน (isConfirmed != true)
+          return medicationTime.isAfter(now) && !isConfirmed;
         } catch (e) {
           print("Error parsing date or time: $e");
           return false;
@@ -139,12 +143,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: ListTile(
-                  leading:
-                      const Icon(Icons.medication, color: Colors.blueAccent),
+                  leading: const Icon(Icons.medication, color: Colors.blueAccent),
                   title: Text(
                     'ทานยา: ${nextMedication?['medication'] ?? 'ไม่ระบุ'}',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,14 +162,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (nextMedication?['details']?.isNotEmpty == true)
                         Text(
                           'รายละเอียด: ${nextMedication?['details']}',
-                          style:
-                              const TextStyle(fontSize: 14, color: Colors.grey),
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                     ],
                   ),
-                  trailing: const Icon(Icons.check_box, color: Colors.green),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  trailing: const Icon(Icons.warning, color: Colors.red),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
               ),
             ] else ...[
