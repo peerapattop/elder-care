@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -13,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String name = '';
+  Map<String, dynamic>? nextMedication;
 
   Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
@@ -29,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadData();
+    _loadNextMedication();
   }
 
   Future<void> _loadData() async {
@@ -38,36 +41,81 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<Map<String, dynamic>?> _getNearestAppointment() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? appointmentsJson = prefs.getString('appointments');
-
-    if (appointmentsJson == null) {
-      return null; // หากไม่มีข้อมูลการนัดหมาย
-    }
-
-    final List<Map<String, dynamic>> appointments =
-        List<Map<String, dynamic>>.from(json.decode(appointmentsJson));
-
-    // แปลงวันที่และเวลาเป็น DateTime เพื่อคำนวณ
-    final now = DateTime.now();
-
-    appointments.sort((a, b) {
-      final DateTime dateTimeA =
-          DateTime.parse('${a['appointmentDate']} ${a['appointmentTime']}');
-      final DateTime dateTimeB =
-          DateTime.parse('${b['appointmentDate']} ${b['appointmentTime']}');
-      return dateTimeA.compareTo(dateTimeB);
+  Future<void> _loadNextMedication() async {
+    final medication = await getNextMedicationTime();
+    setState(() {
+      nextMedication = medication;
     });
+  }
 
-    // กรองเฉพาะเวลาที่มากกว่าหรือเท่ากับเวลาปัจจุบัน
-    final nearestAppointments = appointments.where((appointment) {
-      final DateTime appointmentDateTime = DateTime.parse(
-          '${appointment['appointmentDate']} ${appointment['appointmentTime']}');
-      return appointmentDateTime.isAfter(now);
-    }).toList();
+  Future<Map<String, dynamic>?> getNextMedicationTime() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String? medicationsJson = prefs.getString('medicationReminders');
+      print('medicationsJson from shared preferences: $medicationsJson');
 
-    return nearestAppointments.isNotEmpty ? nearestAppointments.first : null;
+      if (medicationsJson == null || medicationsJson.isEmpty) {
+        print("No medication reminders found in shared preferences.");
+        return null;
+      }
+
+      final List<dynamic> decodedJson = json.decode(medicationsJson);
+      final List<Map<String, dynamic>> medications =
+          decodedJson.map((item) => Map<String, dynamic>.from(item)).toList();
+      print('medications: $medications');
+
+      if (medications.isEmpty) {
+        print("Medication list is empty.");
+        return null;
+      }
+
+      final DateTime now = DateTime.now();
+      final dateFormat = DateFormat("yyyy-MM-dd hh:mm a");
+
+      medications.sort((a, b) {
+        try {
+          final DateTime medicationTimeA =
+              dateFormat.parse('${a['date']} ${a['time']}');
+          final DateTime medicationTimeB =
+              dateFormat.parse('${b['date']} ${b['time']}');
+          return medicationTimeA.compareTo(medicationTimeB);
+        } catch (e) {
+          print("Error parsing date or time during sort: $e");
+          return 0;
+        }
+      });
+
+      final upcomingMedications = medications.where((medication) {
+        try {
+          final dateFormat = DateFormat("yyyy-MM-dd hh:mm a");
+          final DateTime medicationTime =
+              dateFormat.parse('${medication['date']} ${medication['time']}');
+          return medicationTime.isAfter(now);
+        } catch (e) {
+          print("Error parsing date or time: $e");
+          return false;
+        }
+      }).toList();
+
+      if (upcomingMedications.isEmpty) {
+        print("No upcoming medication found.");
+        return null;
+      }
+
+      upcomingMedications.sort((a, b) {
+        final dateFormat = DateFormat("yyyy-MM-dd hh:mm a");
+        final DateTime timeA = dateFormat.parse('${a['date']} ${a['time']}');
+        final DateTime timeB = dateFormat.parse('${b['date']} ${b['time']}');
+        return timeA.compareTo(timeB);
+      });
+
+      final closestMedication = upcomingMedications.first;
+      print("Closest upcoming medication: $closestMedication");
+      return closestMedication;
+    } catch (e) {
+      print("Unexpected error in getNextMedicationTime: $e");
+      return null;
+    }
   }
 
   @override
@@ -90,19 +138,61 @@ class _HomeScreenState extends State<HomeScreen> {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            Card(
-              elevation: 4,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+            if (nextMedication != null) ...[
+              Card(
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  leading:
+                      const Icon(Icons.medication, color: Colors.blueAccent),
+                  title: Text(
+                    'ทานยา: ${nextMedication?['medication'] ?? 'ไม่ระบุ'}',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'จำนวนยา: ${nextMedication?['dosage'] ?? 0} เม็ด',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'เวลา: ${nextMedication?['time'] ?? 'ไม่ระบุ'}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      if (nextMedication?['details']?.isNotEmpty == true)
+                        Text(
+                          'รายละเอียด: ${nextMedication?['details']}',
+                          style:
+                              const TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                    ],
+                  ),
+                  trailing: const Icon(Icons.check_box, color: Colors.green),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
               ),
-              child: const ListTile(
-                leading: Icon(Icons.medication, color: Colors.blueAccent),
-                title: Text('ทานยา: 08:00 AM', style: TextStyle(fontSize: 18)),
-                subtitle: Text('กรุณาทานยาเพื่อสุขภาพที่ดี'),
-                trailing: Icon(Icons.notifications, color: Colors.green),
+            ] else ...[
+              Card(
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const ListTile(
+                  leading: Icon(Icons.medication, color: Colors.blueAccent),
+                  title: Text(
+                    'ไม่มีแจ้งเตือนทานยา',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
               ),
-            ),
+            ],
             Card(
               elevation: 4,
               margin: const EdgeInsets.symmetric(vertical: 8),

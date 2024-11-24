@@ -47,7 +47,6 @@ class _AddMedicationReminderScreenState
   Future<void> _saveMedicationReminder() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // สร้างข้อมูลที่ต้องการบันทึก
     final medicationReminder = {
       'medication': _medicationController.text,
       'dosage': _dosageController.text,
