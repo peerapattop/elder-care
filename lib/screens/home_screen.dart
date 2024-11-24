@@ -48,6 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  String formatDate(String date) {
+    final DateFormat inputFormat = DateFormat('yyyy-MM-dd');
+    final DateFormat outputFormat = DateFormat('dd/MM/yyyy');
+    final DateTime dateTime = inputFormat.parse(date);
+    return outputFormat.format(dateTime);
+  }
+
   Future<Map<String, dynamic>?> getNextMedicationTime() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -55,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
       print('medicationsJson from shared preferences: $medicationsJson');
 
       if (medicationsJson == null || medicationsJson.isEmpty) {
-        print("No medication reminders found in shared preferences.");
         return null;
       }
 
@@ -65,32 +71,19 @@ class _HomeScreenState extends State<HomeScreen> {
       print('medications: $medications');
 
       if (medications.isEmpty) {
-        print("Medication list is empty.");
         return null;
       }
 
       final DateTime now = DateTime.now();
       final dateFormat = DateFormat("yyyy-MM-dd hh:mm a");
 
-      medications.sort((a, b) {
-        try {
-          final DateTime medicationTimeA =
-              dateFormat.parse('${a['date']} ${a['time']}');
-          final DateTime medicationTimeB =
-              dateFormat.parse('${b['date']} ${b['time']}');
-          return medicationTimeA.compareTo(medicationTimeB);
-        } catch (e) {
-          print("Error parsing date or time during sort: $e");
-          return 0;
-        }
-      });
-
+      // กรองเฉพาะยาที่อยู่ในอนาคต
       final upcomingMedications = medications.where((medication) {
         try {
-          final dateFormat = DateFormat("yyyy-MM-dd hh:mm a");
           final DateTime medicationTime =
               dateFormat.parse('${medication['date']} ${medication['time']}');
-          return medicationTime.isAfter(now);
+          print('Checking medication time: $medicationTime, Now: $now');
+          return medicationTime.isAfter(now); // เฉพาะยาในอนาคต
         } catch (e) {
           print("Error parsing date or time: $e");
           return false;
@@ -102,8 +95,8 @@ class _HomeScreenState extends State<HomeScreen> {
         return null;
       }
 
+      // เรียงลำดับจากเวลาที่ใกล้ที่สุด
       upcomingMedications.sort((a, b) {
-        final dateFormat = DateFormat("yyyy-MM-dd hh:mm a");
         final DateTime timeA = dateFormat.parse('${a['date']} ${a['time']}');
         final DateTime timeB = dateFormat.parse('${b['date']} ${b['time']}');
         return timeA.compareTo(timeB);
@@ -161,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: const TextStyle(fontSize: 16),
                       ),
                       Text(
-                        'เวลา: ${nextMedication?['time'] ?? 'ไม่ระบุ'}',
+                        'วันที่: ${formatDate(nextMedication?['date'])} เวลา: ${nextMedication?['time']}',
                         style: const TextStyle(fontSize: 16),
                       ),
                       if (nextMedication?['details']?.isNotEmpty == true)
