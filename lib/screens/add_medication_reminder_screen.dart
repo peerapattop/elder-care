@@ -53,6 +53,7 @@ class _AddMedicationReminderScreenState
       'details': _detailsController.text,
       'date': "${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}",
       'time': _selectedTime.format(context),
+      'status': 'รอดําเนินการ',
     };
 
     final String? savedReminders = prefs.getString('medicationReminders');

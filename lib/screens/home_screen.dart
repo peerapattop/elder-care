@@ -77,17 +77,16 @@ class _HomeScreenState extends State<HomeScreen> {
       final DateTime now = DateTime.now();
       final dateFormat = DateFormat("yyyy-MM-dd hh:mm a");
 
-      // กรองเฉพาะยาที่อยู่ในอนาคตและยังไม่ได้ยืนยันการกิน
       final upcomingMedications = medications.where((medication) {
         try {
           final DateTime medicationTime =
           dateFormat.parse('${medication['date']} ${medication['time']}');
           print('Checking medication time: $medicationTime, Now: $now');
 
-          // ตรวจสอบว่าการยืนยันการทานยานี้ถูกตั้งค่าแล้วหรือยัง
           final bool isConfirmed = medication['isConfirmed'] ?? false;
-          // กรองยาที่อยู่ในอนาคตและยังไม่ได้ยืนยันการกิน (isConfirmed != true)
-          return medicationTime.isAfter(now) && !isConfirmed;
+          return medicationTime.isAfter(now) &&
+              !isConfirmed &&
+              medication['status'] != 'เสร็จสิ้น';
         } catch (e) {
           print("Error parsing date or time: $e");
           return false;
@@ -99,7 +98,6 @@ class _HomeScreenState extends State<HomeScreen> {
         return null;
       }
 
-      // เรียงลำดับจากเวลาที่ใกล้ที่สุด
       upcomingMedications.sort((a, b) {
         final DateTime timeA = dateFormat.parse('${a['date']} ${a['time']}');
         final DateTime timeB = dateFormat.parse('${b['date']} ${b['time']}');

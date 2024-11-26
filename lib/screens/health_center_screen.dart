@@ -65,6 +65,7 @@ class _HealthCenterScreenState extends State<HealthCenterScreen> {
         final data = json.decode(response.body);
         setState(() {
           healthCenters = data['health_centers'];
+          print(healthCenters);
           isLoading = false;
         });
       } else {
