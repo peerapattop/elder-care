@@ -56,6 +56,7 @@ class _AddExerciseReminderScreenState extends State<AddExerciseReminderScreen> {
       'details': _detailsController.text,
       'date': _selectedDate.toIso8601String(),
       'time': _selectedTime.format(context),
+      'status': 'รอดําเนินการ',
     };
 
     final prefs = await SharedPreferences.getInstance();

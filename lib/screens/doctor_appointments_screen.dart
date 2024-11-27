@@ -18,6 +18,7 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final appointmentsString = prefs.getString('appointments') ?? '[]';
     final List<dynamic> appointmentsList = json.decode(appointmentsString);
+    print(appointmentsList);
 
     setState(() {
       appointments = (appointmentsList).map((appointment) {
@@ -141,10 +142,11 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildAppointmentDetail('สถานที่', appointment['location'] ?? 'ไม่มีข้อมูล'),
-                          _buildAppointmentDetail('รายละเอียด', appointment['details'] ?? 'ไม่มีข้อมูล'),
+                          const SizedBox(height: 15),
                           _buildAppointmentDetail('วันที่', formatDate(appointment['appointmentDate']!)),
                           _buildAppointmentDetail('เวลา', appointment['appointmentTime'] ?? 'ไม่มีข้อมูล'),
+                          _buildAppointmentDetail('สถานที่', appointment['location'] ?? 'ไม่มีข้อมูล'),
+                          _buildAppointmentDetail('รายละเอียด', appointment['details'] ?? 'ไม่มีข้อมูล'),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [

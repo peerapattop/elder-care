@@ -60,6 +60,7 @@ class _AddDoctorAppointmentsScreenState
       'details': _detailsController.text,
       'appointmentDate': DateFormat('yyyy-MM-dd').format(_selectedDate),
       'appointmentTime': _selectedTime.format(context),
+      'status': 'รอดําเนินการ',
     };
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();

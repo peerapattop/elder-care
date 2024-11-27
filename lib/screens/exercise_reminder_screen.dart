@@ -23,6 +23,7 @@ class _ExerciseRemindersScreenState extends State<ExerciseRemindersScreen> {
   Future<void> _loadReminders() async {
     final prefs = await SharedPreferences.getInstance();
     final reminders = prefs.getStringList('exerciseReminders') ?? [];
+    print(reminders);
     setState(() {
       _reminders = reminders
           .map((reminder) => jsonDecode(reminder) as Map<String, dynamic>)

@@ -15,6 +15,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String name = '';
   Map<String, dynamic>? nextMedication;
+  Map<String, dynamic>? nextExercise;
+  Map<String, dynamic>? nextDoctorAppointment;
 
   Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
@@ -25,13 +27,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  String aqi = "80";
-
   @override
   void initState() {
     super.initState();
     _loadData();
     _loadNextMedication();
+    _loadNextDoctorAppointment();
+    _loadNextExercise();
   }
 
   Future<void> _loadData() async {
@@ -46,6 +48,100 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       nextMedication = medication;
     });
+  }
+
+  Future<void> _loadNextDoctorAppointment() async {
+    final doctorAppointment = await getNextDoctorAppointment();
+    setState(() {
+      nextDoctorAppointment = doctorAppointment;
+    });
+  }
+
+  Future<void> _loadNextExercise() async {
+    final exercise = await getNextExercise();
+    setState(() {
+      nextExercise = exercise;
+    });
+  }
+
+  Future<Map<String, dynamic>?> getNextDoctorAppointment() async {}
+
+  Future<Map<String, dynamic>?> getNextExercise() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      // ใช้ getStringList() แทน getString() เพราะข้อมูลที่เก็บไว้เป็น List<String>
+      final List<String>? exercisesJsonList = prefs.getStringList('exerciseReminders');
+      print('exercisesJsonList from SharedPreferences: $exercisesJsonList');
+
+      if (exercisesJsonList == null || exercisesJsonList.isEmpty) {
+        return null;
+      }
+
+      // แปลง List<String> ที่เก็บ JSON string แต่ละอันให้เป็น List<Map<String, dynamic> >
+      final List<Map<String, dynamic>> exercises = exercisesJsonList
+          .map((item) => Map<String, dynamic>.from(jsonDecode(item)))
+          .toList();
+
+      print('exercises: $exercises');
+
+      final DateTime now = DateTime.now();
+      final dateFormat = DateFormat("yyyy-MM-dd");
+      final timeFormat = DateFormat("hh:mm a");
+
+      // กรองกิจกรรมที่มีกำหนดเวลาหลังจากปัจจุบัน และตรวจสอบสถานะ
+      final upcomingExercises = exercises.where((exercise) {
+        try {
+          // แยกส่วนวันที่และเวลาออกจากกัน
+          final String dateString = exercise['date'];  // '2024-11-28T00:00:00.000'
+          final String timeString = exercise['time'];  // '2:55 PM'
+
+          // แปลงวันที่และเวลาให้ถูกต้อง
+          final DateTime exerciseDate = dateFormat.parse(dateString.split('T')[0]); // แปลงวันที่จาก '2024-11-28'
+          final DateTime exerciseTime = timeFormat.parse(timeString);  // แปลงเวลาเป็น '2:55 PM'
+
+          // รวมวันที่และเวลาที่แยกจากกันแล้วเป็น DateTime
+          final DateTime exerciseDateTime = DateTime(
+            exerciseDate.year,
+            exerciseDate.month,
+            exerciseDate.day,
+            exerciseTime.hour,
+            exerciseTime.minute,
+          );
+
+          // ตรวจสอบสถานะของกิจกรรม
+          final bool isConfirmed = exercise['isConfirmed'] ?? false;
+          final String status = exercise['status'] ?? '';
+
+          // ตรวจสอบว่าเวลาออกกำลังกายหลังจากปัจจุบัน และสถานะยังไม่เสร็จสิ้น
+          return exerciseDateTime.isAfter(now) &&
+              !isConfirmed &&
+              status != 'เสร็จสิ้น';
+        } catch (e) {
+          print("Error parsing date or time: $e");
+          return false;
+        }
+      }).toList();
+
+      if (upcomingExercises.isEmpty) {
+        print("No upcoming exercise found.");
+        return null;
+      }
+
+      // เรียงลำดับกิจกรรมตามเวลา
+      upcomingExercises.sort((a, b) {
+        final DateTime timeA = dateFormat.parse(a['date']);
+        final DateTime timeB = dateFormat.parse(b['date']);
+        return timeA.compareTo(timeB);
+      });
+
+      final closestExercise = upcomingExercises.first;
+      print("Closest upcoming exercise: $closestExercise");
+      return closestExercise;
+    } catch (e) {
+      print("Unexpected error in getNextExercise: $e");
+      return null;
+    }
   }
 
   String formatDate(String date) {
@@ -67,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final List<dynamic> decodedJson = json.decode(medicationsJson);
       final List<Map<String, dynamic>> medications =
-      decodedJson.map((item) => Map<String, dynamic>.from(item)).toList();
+          decodedJson.map((item) => Map<String, dynamic>.from(item)).toList();
       print('medications: $medications');
 
       if (medications.isEmpty) {
@@ -80,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final upcomingMedications = medications.where((medication) {
         try {
           final DateTime medicationTime =
-          dateFormat.parse('${medication['date']} ${medication['time']}');
+              dateFormat.parse('${medication['date']} ${medication['time']}');
           print('Checking medication time: $medicationTime, Now: $now');
 
           final bool isConfirmed = medication['isConfirmed'] ?? false;
@@ -141,10 +237,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: ListTile(
-                  leading: const Icon(Icons.medication, color: Colors.blueAccent),
+                  leading:
+                      const Icon(Icons.medication, color: Colors.blueAccent),
                   title: Text(
                     'ทานยา: ${nextMedication?['medication'] ?? 'ไม่ระบุ'}',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,12 +258,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (nextMedication?['details']?.isNotEmpty == true)
                         Text(
                           'รายละเอียด: ${nextMedication?['details']}',
-                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                          style:
+                              const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                     ],
                   ),
                   trailing: const Icon(Icons.warning, color: Colors.red),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
               ),
             ] else ...[
@@ -198,20 +298,49 @@ class _HomeScreenState extends State<HomeScreen> {
                 trailing: Icon(Icons.calendar_today, color: Colors.orange),
               ),
             ),
-            Card(
-              elevation: 4,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+            if (nextExercise != null) ...[
+              Card(
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.medical_services,
+                      color: Colors.blueAccent),
+                  title: Text(
+                      'กิจกรรม: ${nextExercise?['activity'] ?? 'ไม่ระบุ'}',
+                      style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold )),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          'วันที่: ${formatDate(nextExercise?['date'])} เวลา ${nextExercise?['time']}'),
+                      Text('รายละเอียด ${nextExercise!['details']}',style: const TextStyle(fontSize: 14))
+                    ],
+                  ),
+                  trailing: const Icon(Icons.warning, color: Colors.red),
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
               ),
-              child: const ListTile(
-                leading: Icon(Icons.medical_services, color: Colors.blueAccent),
-                title: Text('กิจกรรม: วิ่ง 30 นาที ',
-                    style: TextStyle(fontSize: 18)),
-                subtitle: Text('การนัดหมายถัดไป: 10:00 AM'),
-                trailing: Icon(Icons.calendar_today, color: Colors.orange),
+            ] else ...[
+              Card(
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const ListTile(
+                  leading:
+                      Icon(Icons.medical_services, color: Colors.blueAccent),
+                  title: Text(
+                    'ไม่มีแจ้งเตือนออกกำลังกาย',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
               ),
-            ),
+            ]
           ],
         ),
       ),
