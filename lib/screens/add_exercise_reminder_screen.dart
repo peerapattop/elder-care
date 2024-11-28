@@ -65,7 +65,7 @@ class _AddExerciseReminderScreenState extends State<AddExerciseReminderScreen> {
     await prefs.setStringList('exerciseReminders', reminders);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('บันทึกสำเร็จ')),
+      const SnackBar(content: Text('บันทึกข้อมูลแจ้งเตือนออกกำลังกายสําเร็จ')),
     );
 
     Navigator.pop(context);

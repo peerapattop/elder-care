@@ -66,7 +66,7 @@ class _AddMedicationReminderScreenState
     await prefs.setString('medicationReminders', jsonEncode(remindersList));
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('บันทึกการเตือนสำเร็จ')),
+      const SnackBar(content: Text('บันทึกข้อมูลแจ้งเตือนกินยาสำเร็จ')),
     );
 
     _medicationController.clear();

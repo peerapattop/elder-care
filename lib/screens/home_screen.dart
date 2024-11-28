@@ -64,13 +64,76 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<Map<String, dynamic>?> getNextDoctorAppointment() async {}
+  Future<Map<String, dynamic>?> getNextDoctorAppointment() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      // อ่านข้อมูลจาก SharedPreferences (เก็บเป็น List<String>)
+      List<String>? storedData = prefs.getStringList('appointments');
+      List<Map<String, dynamic>> doctors = [];
+
+      if (storedData != null && storedData.isNotEmpty) {
+        try {
+          // แปลง String แต่ละอันใน List ให้เป็น Map<String, dynamic>
+          doctors = storedData
+              .map((item) => Map<String, dynamic>.from(jsonDecode(item)))
+              .toList();
+        } catch (e) {
+          print("Error decoding stored data: $e");
+          doctors = []; // ถ้าแปลงข้อมูลผิดพลาด ให้เริ่มต้นใหม่
+        }
+      }
+
+      if (doctors.isEmpty) {
+        return null; // หากไม่พบข้อมูลการนัดหมาย
+      }
+
+      final DateTime now = DateTime.now();
+      final dateTimeFormat = DateFormat("yyyy-MM-dd hh:mm a");
+
+      // Filter upcoming appointments
+      final List<Map<String, dynamic>> upcomingDoctorsAppointments = doctors.where((doctor) {
+        try {
+          final String dateString = doctor['appointmentDate'] ?? '';
+          final String timeString = doctor['appointmentTime'] ?? '';
+
+          final DateTime doctorDateTime = dateTimeFormat.parse('$dateString $timeString');
+
+          final bool isConfirmed = doctor['isConfirmed'] ?? false;
+          final String status = doctor['status']?.toLowerCase() ?? '';
+
+          return doctorDateTime.isAfter(now) && !isConfirmed && status != 'เสร็จสิ้น';
+        } catch (e) {
+          print("Error parsing doctor appointment: $e");
+          return false;
+        }
+      }).toList();
+
+      if (upcomingDoctorsAppointments.isEmpty) {
+        print("No upcoming doctor appointments found.");
+        return null;
+      }
+
+      // Sort by datetime
+      upcomingDoctorsAppointments.sort((a, b) {
+        final DateTime dateTimeA = dateTimeFormat.parse('${a['appointmentDate']} ${a['appointmentTime']}');
+        final DateTime dateTimeB = dateTimeFormat.parse('${b['appointmentDate']} ${b['appointmentTime']}');
+        return dateTimeA.compareTo(dateTimeB);
+      });
+
+      final closestDoctor = upcomingDoctorsAppointments.first;
+      print("Closest upcoming appointment: $closestDoctor");
+      return closestDoctor;
+    } catch (e) {
+      print("Unexpected error in getNextDoctorAppointment: $e");
+      return null;
+    }
+  }
 
   Future<Map<String, dynamic>?> getNextExercise() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      // ใช้ getStringList() แทน getString() เพราะข้อมูลที่เก็บไว้เป็น List<String>
       final List<String>? exercisesJsonList = prefs.getStringList('exerciseReminders');
       print('exercisesJsonList from SharedPreferences: $exercisesJsonList');
 
@@ -78,7 +141,6 @@ class _HomeScreenState extends State<HomeScreen> {
         return null;
       }
 
-      // แปลง List<String> ที่เก็บ JSON string แต่ละอันให้เป็น List<Map<String, dynamic> >
       final List<Map<String, dynamic>> exercises = exercisesJsonList
           .map((item) => Map<String, dynamic>.from(jsonDecode(item)))
           .toList();
@@ -89,18 +151,14 @@ class _HomeScreenState extends State<HomeScreen> {
       final dateFormat = DateFormat("yyyy-MM-dd");
       final timeFormat = DateFormat("hh:mm a");
 
-      // กรองกิจกรรมที่มีกำหนดเวลาหลังจากปัจจุบัน และตรวจสอบสถานะ
       final upcomingExercises = exercises.where((exercise) {
         try {
-          // แยกส่วนวันที่และเวลาออกจากกัน
-          final String dateString = exercise['date'];  // '2024-11-28T00:00:00.000'
-          final String timeString = exercise['time'];  // '2:55 PM'
+          final String dateString = exercise['date'];
+          final String timeString = exercise['time'];
 
-          // แปลงวันที่และเวลาให้ถูกต้อง
-          final DateTime exerciseDate = dateFormat.parse(dateString.split('T')[0]); // แปลงวันที่จาก '2024-11-28'
-          final DateTime exerciseTime = timeFormat.parse(timeString);  // แปลงเวลาเป็น '2:55 PM'
+          final DateTime exerciseDate = dateFormat.parse(dateString.split('T')[0]);
+          final DateTime exerciseTime = timeFormat.parse(timeString);
 
-          // รวมวันที่และเวลาที่แยกจากกันแล้วเป็น DateTime
           final DateTime exerciseDateTime = DateTime(
             exerciseDate.year,
             exerciseDate.month,
@@ -109,11 +167,9 @@ class _HomeScreenState extends State<HomeScreen> {
             exerciseTime.minute,
           );
 
-          // ตรวจสอบสถานะของกิจกรรม
           final bool isConfirmed = exercise['isConfirmed'] ?? false;
           final String status = exercise['status'] ?? '';
 
-          // ตรวจสอบว่าเวลาออกกำลังกายหลังจากปัจจุบัน และสถานะยังไม่เสร็จสิ้น
           return exerciseDateTime.isAfter(now) &&
               !isConfirmed &&
               status != 'เสร็จสิ้น';
@@ -127,8 +183,6 @@ class _HomeScreenState extends State<HomeScreen> {
         print("No upcoming exercise found.");
         return null;
       }
-
-      // เรียงลำดับกิจกรรมตามเวลา
       upcomingExercises.sort((a, b) {
         final DateTime timeA = dateFormat.parse(a['date']);
         final DateTime timeB = dateFormat.parse(b['date']);
@@ -284,20 +338,39 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ],
-            Card(
-              elevation: 4,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+            if(nextDoctorAppointment != null)...[
+              Card(
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.medical_services, color: Colors.blueAccent),
+                  title: Text('พบแพทย์: ${nextDoctorAppointment!['doctorName']}',
+                      style: const TextStyle(fontSize: 18)),
+                  subtitle: Text('การนัดหมายถัดไป: 10:00 AM'),
+                  trailing: Icon(Icons.calendar_today, color: Colors.orange),
+                ),
               ),
-              child: const ListTile(
-                leading: Icon(Icons.medical_services, color: Colors.blueAccent),
-                title: Text('พบแพทย์: Dr. Jane Smith',
-                    style: TextStyle(fontSize: 18)),
-                subtitle: Text('การนัดหมายถัดไป: 10:00 AM'),
-                trailing: Icon(Icons.calendar_today, color: Colors.orange),
+            ]else ...[
+              Card(
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const ListTile(
+                  leading:
+                  Icon(Icons.medical_services, color: Colors.blueAccent),
+                  title: Text(
+                    'ไม่มีแจ้งเตือนพบหมอ',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
               ),
-            ),
+            ],
+
             if (nextExercise != null) ...[
               Card(
                 elevation: 4,
