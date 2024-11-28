@@ -68,30 +68,31 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      // อ่านข้อมูลจาก SharedPreferences (เก็บเป็น List<String>)
-      List<String>? storedData = prefs.getStringList('appointments');
-      List<Map<String, dynamic>> doctors = [];
+      // ดึงข้อมูลจาก SharedPreferences
+      String? storedData = prefs.getString('appointments');
 
-      if (storedData != null && storedData.isNotEmpty) {
-        try {
-          // แปลง String แต่ละอันใน List ให้เป็น Map<String, dynamic>
-          doctors = storedData
-              .map((item) => Map<String, dynamic>.from(jsonDecode(item)))
-              .toList();
-        } catch (e) {
-          print("Error decoding stored data: $e");
-          doctors = []; // ถ้าแปลงข้อมูลผิดพลาด ให้เริ่มต้นใหม่
-        }
+      if (storedData == null) {
+        print("No appointments found");
+        return null;
       }
 
+      String decodedData = storedData.replaceAll('&quot;', '"');
+
+      List<dynamic> appointmentsList = jsonDecode(decodedData);
+
+      List<Map<String, dynamic>> doctors = appointmentsList.map((item) {
+        return Map<String, dynamic>.from(item);
+      }).toList();
+
       if (doctors.isEmpty) {
-        return null; // หากไม่พบข้อมูลการนัดหมาย
+        print("No upcoming doctor appointments found.");
+        return null;
       }
 
       final DateTime now = DateTime.now();
       final dateTimeFormat = DateFormat("yyyy-MM-dd hh:mm a");
 
-      // Filter upcoming appointments
+      // Filter upcoming appointments where status is NOT 'เสร็จสิ้น'
       final List<Map<String, dynamic>> upcomingDoctorsAppointments = doctors.where((doctor) {
         try {
           final String dateString = doctor['appointmentDate'] ?? '';
@@ -102,7 +103,8 @@ class _HomeScreenState extends State<HomeScreen> {
           final bool isConfirmed = doctor['isConfirmed'] ?? false;
           final String status = doctor['status']?.toLowerCase() ?? '';
 
-          return doctorDateTime.isAfter(now) && !isConfirmed && status != 'เสร็จสิ้น';
+          // ตรวจสอบสถานะ และแสดงข้อมูลที่ยังไม่เสร็จสิ้น
+          return doctorDateTime.isAfter(now) && !isConfirmed && status != 'หาหมอแล้ว';
         } catch (e) {
           print("Error parsing doctor appointment: $e");
           return false;
@@ -114,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return null;
       }
 
-      // Sort by datetime
+      // จัดเรียงตามวันเวลา
       upcomingDoctorsAppointments.sort((a, b) {
         final DateTime dateTimeA = dateTimeFormat.parse('${a['appointmentDate']} ${a['appointmentTime']}');
         final DateTime dateTimeB = dateTimeFormat.parse('${b['appointmentDate']} ${b['appointmentTime']}');
@@ -123,7 +125,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final closestDoctor = upcomingDoctorsAppointments.first;
       print("Closest upcoming appointment: $closestDoctor");
+
       return closestDoctor;
+
     } catch (e) {
       print("Unexpected error in getNextDoctorAppointment: $e");
       return null;
@@ -347,12 +351,35 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.medical_services, color: Colors.blueAccent),
-                  title: Text('พบแพทย์: ${nextDoctorAppointment!['doctorName']}',
-                      style: const TextStyle(fontSize: 18)),
-                  subtitle: Text('การนัดหมายถัดไป: 10:00 AM'),
-                  trailing: Icon(Icons.calendar_today, color: Colors.orange),
+                  title: Text(
+                    'พบแพทย์: ${nextDoctorAppointment?['doctorName']}',
+                    style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'วันที่: ${formatDate(nextDoctorAppointment?['appointmentDate'])}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'เวลา: ${nextDoctorAppointment?['appointmentTime']}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'สถานที่: ${nextDoctorAppointment?['location']}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'รายละเอียด: ${nextDoctorAppointment?['details']}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  trailing: const Icon(Icons.calendar_today, color: Colors.orange),
                 ),
               ),
+
             ]else ...[
               Card(
                 elevation: 4,
