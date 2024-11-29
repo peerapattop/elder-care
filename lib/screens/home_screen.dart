@@ -68,7 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      // ดึงข้อมูลจาก SharedPreferences
       String? storedData = prefs.getString('appointments');
 
       if (storedData == null) {
@@ -103,7 +102,6 @@ class _HomeScreenState extends State<HomeScreen> {
           final bool isConfirmed = doctor['isConfirmed'] ?? false;
           final String status = doctor['status']?.toLowerCase() ?? '';
 
-          // ตรวจสอบสถานะ และแสดงข้อมูลที่ยังไม่เสร็จสิ้น
           return doctorDateTime.isAfter(now) && !isConfirmed && status != 'หาหมอแล้ว';
         } catch (e) {
           print("Error parsing doctor appointment: $e");
@@ -116,7 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
         return null;
       }
 
-      // จัดเรียงตามวันเวลา
       upcomingDoctorsAppointments.sort((a, b) {
         final DateTime dateTimeA = dateTimeFormat.parse('${a['appointmentDate']} ${a['appointmentTime']}');
         final DateTime dateTimeB = dateTimeFormat.parse('${b['appointmentDate']} ${b['appointmentTime']}');
