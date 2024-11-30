@@ -164,19 +164,18 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      final List<String>? exercisesJsonList =
-          prefs.getStringList('exerciseReminders');
+      final List<String>? exercisesJsonList = prefs.getStringList('exerciseReminders');
       print('exercisesJsonList from SharedPreferences: $exercisesJsonList');
 
       if (exercisesJsonList == null || exercisesJsonList.isEmpty) {
+        print('No exercises found in SharedPreferences.');
         return null;
       }
 
       final List<Map<String, dynamic>> exercises = exercisesJsonList
           .map((item) => Map<String, dynamic>.from(jsonDecode(item)))
           .toList();
-
-      print('exercises: $exercises');
+      print('Parsed exercises: $exercises');
 
       final DateTime now = DateTime.now();
       final dateFormat = DateFormat("yyyy-MM-dd");
@@ -187,26 +186,32 @@ class _HomeScreenState extends State<HomeScreen> {
           final String dateString = exercise['date'];
           final String timeString = exercise['time'];
 
-          final DateTime exerciseDate =
-              dateFormat.parse(dateString.split('T')[0]);
-          final DateTime exerciseTime = timeFormat.parse(timeString);
+          print('Processing exercise: $exercise');
+          print('Raw date: $dateString, Raw time: $timeString');
+
+          final DateTime exerciseDate = dateFormat.parse(dateString);
+          final DateTime exerciseTimeOnly = timeFormat.parse(timeString);
 
           final DateTime exerciseDateTime = DateTime(
             exerciseDate.year,
             exerciseDate.month,
             exerciseDate.day,
-            exerciseTime.hour,
-            exerciseTime.minute,
+            exerciseTimeOnly.hour,
+            exerciseTimeOnly.minute,
           );
+
+          print('Parsed exerciseDateTime: $exerciseDateTime');
 
           final bool isConfirmed = exercise['isConfirmed'] ?? false;
           final String status = exercise['status'] ?? '';
 
-          return exerciseDateTime.isAfter(now) &&
+          final bool isValid = exerciseDateTime.isAfter(now) &&
               !isConfirmed &&
               status != 'เสร็จสิ้น';
+          print('Is valid exercise: $isValid');
+          return isValid;
         } catch (e) {
-          print("Error parsing date or time: $e");
+          print("Error parsing date or time for exercise $exercise: $e");
           return false;
         }
       }).toList();
@@ -215,6 +220,9 @@ class _HomeScreenState extends State<HomeScreen> {
         print("No upcoming exercise found.");
         return null;
       }
+
+      print('Upcoming exercises: $upcomingExercises');
+
       upcomingExercises.sort((a, b) {
         final DateTime timeA = dateFormat.parse(a['date']);
         final DateTime timeB = dateFormat.parse(b['date']);
@@ -224,31 +232,41 @@ class _HomeScreenState extends State<HomeScreen> {
       final closestExercise = upcomingExercises.first;
       print("Closest upcoming exercise: $closestExercise");
 
-      final DateTime exerciseTime = dateFormat
-          .parse('${closestExercise['date']} ${closestExercise['time']}');
-      final Duration timeDifference = exerciseTime.difference(now);
+      final DateTime exerciseDate =
+      dateFormat.parse(closestExercise['date']);
+      final DateTime exerciseTimeOnly =
+      timeFormat.parse(closestExercise['time']);
 
-      print('เวลา exerciseTime: $exerciseTime');
-      print('เวลา now: $now');
-      print('timeDifference: ${timeDifference.inSeconds}');
+      final DateTime exerciseDateTime = DateTime(
+        exerciseDate.year,
+        exerciseDate.month,
+        exerciseDate.day,
+        exerciseTimeOnly.hour,
+        exerciseTimeOnly.minute,
+      );
+
+      final Duration timeDifference = exerciseDateTime.difference(now);
+
+      print('Exercise time: $exerciseDateTime');
+      print('Current time: $now');
+      print('Time difference in seconds: ${timeDifference.inSeconds}');
 
       if (timeDifference.inSeconds <= 0) {
         NotificationService.showInstantNotification(
           closestExercise['title'] ?? 'แจ้งเตือนการออกกำลังกาย',
           'ถึงเวลาออกกำลังกาย: ${closestExercise['activity']}',
         );
-        print("ส่งการแจ้งเตือนสำหรับการออกกำลังกาย: ${closestExercise['activity']}");
+        print("Immediate notification sent for: ${closestExercise['activity']}");
       } else {
         Timer(timeDifference, () {
           NotificationService.showInstantNotification(
             'แจ้งเตือนการออกกำลังกาย',
             'เวลา ${closestExercise['time']} ถึงเวลาออกกำลังกาย: ${closestExercise['activity']}',
           );
-          print("ส่งการแจ้งเตือนสำหรับการออกกำลังกาย: ${closestExercise['activity']}");
+          print("Scheduled notification sent for: ${closestExercise['activity']}");
         });
-        print("ตั้งเวลาสำหรับการแจ้งเตือนในอีก ${timeDifference.inSeconds} วินาที");
+        print("Notification scheduled in ${timeDifference.inSeconds} seconds.");
       }
-
 
       return closestExercise;
     } catch (e) {

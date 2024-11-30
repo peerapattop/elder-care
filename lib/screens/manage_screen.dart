@@ -95,7 +95,7 @@ class _ManageScreenState extends State<ManageScreen>
                     ),
                     ListTile(
                       leading: const Icon(Icons.medication),
-                      title: const Text('เพิ่มยาที่ต้องการแจ้งเตือน'),
+                      title: const Text('เพิ่มยาที่ต้องกิน'),
                       onTap: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).push(
