@@ -39,7 +39,7 @@ class _MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: 'หน้าแรก',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.newspaper),
@@ -55,7 +55,7 @@ class _MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: 'โปรไฟล์',
           ),
         ],
         selectedItemColor: Colors.blueAccent,

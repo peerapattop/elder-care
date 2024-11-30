@@ -21,11 +21,46 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? nextExercise;
   Map<String, dynamic>? nextDoctorAppointment;
 
-  Future<void> _makePhoneCall(String phoneNumber) async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunch(phoneUri.toString())) {
-      await launch(phoneUri.toString());
-    } else {
+  Future<void> _makePhoneCallHospital() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? phoneNumberHospital = prefs.getString('hospitalPhone');
+
+      if (phoneNumberHospital == null || phoneNumberHospital.isEmpty) {
+        throw 'หมายเลขโทรศัพท์ไม่พบใน SharedPreferences';
+      }
+
+      final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumberHospital);
+
+      if (await canLaunch(phoneUri.toString())) {
+        await launch(phoneUri.toString());
+      } else {
+        throw 'ไม่สามารถโทรออกได้';
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw 'ไม่สามารถโทรออกได้';
+    }
+  }
+
+  Future<void> _makePhoneCallResident() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? phoneNumberResident = prefs.getString('relativePhone');
+
+      if (phoneNumberResident == null || phoneNumberResident.isEmpty) {
+        throw 'หมายเลขโทรศัพท์ไม่พบใน SharedPreferences';
+      }
+
+      final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumberResident);
+
+      if (await canLaunch(phoneUri.toString())) {
+        await launch(phoneUri.toString());
+      } else {
+        throw 'ไม่สามารถโทรออกได้';
+      }
+    } catch (e) {
+      print('Error: $e');
       throw 'ไม่สามารถโทรออกได้';
     }
   }
@@ -556,8 +591,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     ElevatedButton.icon(
                       onPressed: () {
-                        // โทรติดต่อโรงพยาบาล
-                        _makePhoneCall("0801234567");
+                        _makePhoneCallHospital();
                       },
                       icon:
                           const Icon(Icons.local_hospital, color: Colors.white),
@@ -581,8 +615,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: () {
-                        // โทรติดต่อญาติ
-                        _makePhoneCall("0897654321");
+                        _makePhoneCallResident();
                       },
                       icon: const Icon(Icons.family_restroom,
                           color: Colors.white),
