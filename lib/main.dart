@@ -1,12 +1,16 @@
 import 'package:elder_care/screens/main_screen.dart';
+import 'package:elder_care/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 import 'screens/welcome_screen.dart';
 import 'screens/register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.init();
+  tz.initializeTimeZones();
 
   final prefs = await SharedPreferences.getInstance();
   final bool isWelcomeCompleted = prefs.getBool('isWelcomeCompleted') ?? false;

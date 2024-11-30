@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../services/notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -89,20 +92,24 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       final DateTime now = DateTime.now();
-      final dateTimeFormat = DateFormat("yyyy-MM-dd hh:mm a");
+      final dateTimeFormat = DateFormat("yyyy-MM-dd hh:mm a"); // Ensure the format matches the input date format
 
       // Filter upcoming appointments where status is NOT 'เสร็จสิ้น'
-      final List<Map<String, dynamic>> upcomingDoctorsAppointments = doctors.where((doctor) {
+      final List<Map<String, dynamic>> upcomingDoctorsAppointments =
+      doctors.where((doctor) {
         try {
           final String dateString = doctor['appointmentDate'] ?? '';
           final String timeString = doctor['appointmentTime'] ?? '';
 
-          final DateTime doctorDateTime = dateTimeFormat.parse('$dateString $timeString');
+          final DateTime doctorDateTime =
+          dateTimeFormat.parse('$dateString $timeString');
 
           final bool isConfirmed = doctor['isConfirmed'] ?? false;
           final String status = doctor['status']?.toLowerCase() ?? '';
 
-          return doctorDateTime.isAfter(now) && !isConfirmed && status != 'หาหมอแล้ว';
+          return doctorDateTime.isAfter(now) &&
+              !isConfirmed &&
+              status != 'หาหมอแล้ว';
         } catch (e) {
           print("Error parsing doctor appointment: $e");
           return false;
@@ -115,16 +122,38 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       upcomingDoctorsAppointments.sort((a, b) {
-        final DateTime dateTimeA = dateTimeFormat.parse('${a['appointmentDate']} ${a['appointmentTime']}');
-        final DateTime dateTimeB = dateTimeFormat.parse('${b['appointmentDate']} ${b['appointmentTime']}');
+        final DateTime dateTimeA = dateTimeFormat
+            .parse('${a['appointmentDate']} ${a['appointmentTime']}');
+        final DateTime dateTimeB = dateTimeFormat
+            .parse('${b['appointmentDate']} ${b['appointmentTime']}');
         return dateTimeA.compareTo(dateTimeB);
       });
 
       final closestDoctor = upcomingDoctorsAppointments.first;
       print("Closest upcoming appointment: $closestDoctor");
 
-      return closestDoctor;
+      final DateTime doctorTime = dateTimeFormat
+          .parse('${closestDoctor['appointmentDate']} ${closestDoctor['appointmentTime']}');
+      final Duration timeDifference = doctorTime.difference(now);
 
+      if (timeDifference.inSeconds <= 0) {
+        NotificationService.showInstantNotification(
+          closestDoctor['title'] ?? 'แจ้งเตือนการพบหมอ',
+          'ถึงเวลาไปพบหมอ: ${closestDoctor['doctorName']}',
+        );
+        print("ส่งการแจ้งเตือนสำหรับการพบหมอ: ${closestDoctor['doctorName']}");
+      } else {
+        Timer(timeDifference, () {
+          NotificationService.showInstantNotification(
+            'แจ้งเตือนการพบหมอ',
+            'เวลา ${closestDoctor['appointmentTime']} ถึงเวลาไปพบหมอ: ${closestDoctor['doctorName']} สถานที่: ${closestDoctor['location']}',
+          );
+          print("ส่งการแจ้งเตือนสำหรับการพบหมอ: ${closestDoctor['doctorName']}");
+        });
+        print("ตั้งเวลาสำหรับการแจ้งเตือนในอีก ${timeDifference.inSeconds} วินาที");
+      }
+
+      return closestDoctor;
     } catch (e) {
       print("Unexpected error in getNextDoctorAppointment: $e");
       return null;
@@ -135,7 +164,8 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      final List<String>? exercisesJsonList = prefs.getStringList('exerciseReminders');
+      final List<String>? exercisesJsonList =
+          prefs.getStringList('exerciseReminders');
       print('exercisesJsonList from SharedPreferences: $exercisesJsonList');
 
       if (exercisesJsonList == null || exercisesJsonList.isEmpty) {
@@ -157,7 +187,8 @@ class _HomeScreenState extends State<HomeScreen> {
           final String dateString = exercise['date'];
           final String timeString = exercise['time'];
 
-          final DateTime exerciseDate = dateFormat.parse(dateString.split('T')[0]);
+          final DateTime exerciseDate =
+              dateFormat.parse(dateString.split('T')[0]);
           final DateTime exerciseTime = timeFormat.parse(timeString);
 
           final DateTime exerciseDateTime = DateTime(
@@ -192,6 +223,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final closestExercise = upcomingExercises.first;
       print("Closest upcoming exercise: $closestExercise");
+
+      final DateTime exerciseTime = dateFormat
+          .parse('${closestExercise['date']} ${closestExercise['time']}');
+      final Duration timeDifference = exerciseTime.difference(now);
+
+      print('เวลา exerciseTime: $exerciseTime');
+      print('เวลา now: $now');
+      print('timeDifference: ${timeDifference.inSeconds}');
+
+      if (timeDifference.inSeconds <= 0) {
+        NotificationService.showInstantNotification(
+          closestExercise['title'] ?? 'แจ้งเตือนการออกกำลังกาย',
+          'ถึงเวลาออกกำลังกาย: ${closestExercise['activity']}',
+        );
+        print("ส่งการแจ้งเตือนสำหรับการออกกำลังกาย: ${closestExercise['activity']}");
+      } else {
+        Timer(timeDifference, () {
+          NotificationService.showInstantNotification(
+            'แจ้งเตือนการออกกำลังกาย',
+            'เวลา ${closestExercise['time']} ถึงเวลาออกกำลังกาย: ${closestExercise['activity']}',
+          );
+          print("ส่งการแจ้งเตือนสำหรับการออกกำลังกาย: ${closestExercise['activity']}");
+        });
+        print("ตั้งเวลาสำหรับการแจ้งเตือนในอีก ${timeDifference.inSeconds} วินาที");
+      }
+
+
       return closestExercise;
     } catch (e) {
       print("Unexpected error in getNextExercise: $e");
@@ -257,6 +315,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final closestMedication = upcomingMedications.first;
       print("Closest upcoming medication: $closestMedication");
+
+      final DateTime medicationTime = dateFormat
+          .parse('${closestMedication['date']} ${closestMedication['time']}');
+      final Duration timeDifference = medicationTime.difference(now);
+
+      if (timeDifference.inSeconds <= 0) {
+        NotificationService.showInstantNotification(
+          closestMedication['title'] ?? 'การแจ้งเตือนยา',
+          'ถึงเวลาทานยา: ${closestMedication['medication']}',
+        );
+        print("ส่งการแจ้งเตือนสำหรับยา: ${closestMedication['medication']}");
+      } else {
+        Timer(timeDifference, () {
+          NotificationService.showInstantNotification(
+            'แจ้งเตือนทานยา',
+            'เวลา ${closestMedication['time']} ถึงเวลาทานยา: ${closestMedication['medication']} จำนวน ${closestMedication['dosage']} เม็ด',
+          );
+          print("ส่งการแจ้งเตือนสำหรับยา: ${closestMedication['medication']}");
+        });
+        print(
+            "ตั้งเวลาสำหรับการแจ้งเตือนในอีก ${timeDifference.inSeconds} วินาที");
+      }
+
       return closestMedication;
     } catch (e) {
       print("Unexpected error in getNextMedicationTime: $e");
@@ -339,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ],
-            if(nextDoctorAppointment != null)...[
+            if (nextDoctorAppointment != null) ...[
               Card(
                 elevation: 4,
                 margin: const EdgeInsets.symmetric(vertical: 8),
@@ -347,10 +428,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: ListTile(
-                  leading: const Icon(Icons.medical_services, color: Colors.blueAccent),
+                  leading: const Icon(Icons.medical_services,
+                      color: Colors.blueAccent),
                   title: Text(
                     'พบแพทย์: ${nextDoctorAppointment?['doctorName']}',
-                    style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,11 +456,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  trailing: const Icon(Icons.calendar_today, color: Colors.orange),
+                  trailing:
+                      const Icon(Icons.calendar_today, color: Colors.orange),
                 ),
               ),
-
-            ]else ...[
+            ] else ...[
               Card(
                 elevation: 4,
                 margin: const EdgeInsets.symmetric(vertical: 8),
@@ -386,7 +469,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: const ListTile(
                   leading:
-                  Icon(Icons.medical_services, color: Colors.blueAccent),
+                      Icon(Icons.medical_services, color: Colors.blueAccent),
                   title: Text(
                     'ไม่มีแจ้งเตือนพบหมอ',
                     style: TextStyle(fontSize: 18),
@@ -394,7 +477,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ],
-
             if (nextExercise != null) ...[
               Card(
                 elevation: 4,
@@ -407,18 +489,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.blueAccent),
                   title: Text(
                       'กิจกรรม: ${nextExercise?['activity'] ?? 'ไม่ระบุ'}',
-                      style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold )),
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                           'วันที่: ${formatDate(nextExercise?['date'])} เวลา ${nextExercise?['time']}'),
-                      Text('รายละเอียด ${nextExercise!['details']}',style: const TextStyle(fontSize: 14))
+                      Text('รายละเอียด ${nextExercise!['details']}',
+                          style: const TextStyle(fontSize: 14))
                     ],
                   ),
                   trailing: const Icon(Icons.warning, color: Colors.red),
                   contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
               ),
             ] else ...[

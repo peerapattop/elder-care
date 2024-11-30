@@ -54,7 +54,7 @@ class _AddExerciseReminderScreenState extends State<AddExerciseReminderScreen> {
     final newReminder = {
       'activity': _activityController.text,
       'details': _detailsController.text,
-      'date': _selectedDate.toIso8601String(),
+      'date': "${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}",
       'time': _selectedTime.format(context),
       'status': 'รอดําเนินการ',
     };
