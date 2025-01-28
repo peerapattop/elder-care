@@ -1,16 +1,8 @@
-# elder_care
+# Elder Care
 
-ElderCare
+เป็นแพลตฟอร์มที่ออกแบบมาเพื่อช่วยเหลือผู้สูงอายุ ให้สามารถจัดการชีวิตประจำวันและการดูแลสุขภาพได้อย่างสะดวกสบาย เช่น การแจ้งเตือนทานยา แจ้งเตือนพบหมอ แจ้งเตือนออกกำลังกาย โดยแอปพลิเคชันนี้มุ่งเน้นความเรียบง่าย ปลอดภัย และตอบสนองต่อความต้องการเฉพาะของผู้ใช้งานในกลุ่มนี้ พัฒนาด้วย Flutter ซึ่งเป็นโปรเจ็กต์จากการรับ Freelance
 
-## Getting Started
+## 🎥 ตัวอย่างแอปพลิเคชัน
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📥 ดาวน์โหลดแอปพลิเคชัน
+https://drive.google.com/file/d/1sbWaidzI0X3dnreyuF74LgymSyeSdyrz/view?usp=sharing
